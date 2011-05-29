@@ -351,7 +351,7 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
     CFTreeRef *children = (CFTreeRef *)malloc( childCount * sizeof( CFTreeRef ) );
     CFTreeGetChildren( treeBacking, children );
     
-    // iterate over the children extracting contentObjects and adding to array...
+    // iterate over the children wrapping each in turn and adding to the return array...
     NSMutableArray *childWrappers = [NSMutableArray arrayWithCapacity:childCount];
     CFIndex i;
     for ( i = 0; i < childCount; i++ )
@@ -376,7 +376,7 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
     CFTreeRef *children = (CFTreeRef *)malloc( childCount * sizeof( CFTreeRef ) );
     CFTreeGetChildren( treeBacking, children );
     
-    // iterate over the children wrapping each in turn and adding to the return array...
+    // iterate over the children extracting contentObjects and adding to array...
     NSMutableArray *childObjects = [NSMutableArray arrayWithCapacity:childCount];
     CFIndex i;
     for ( i = 0; i < childCount; i++ )
