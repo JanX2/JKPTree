@@ -29,29 +29,33 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 //  JXDescriptionForObject()
 //---------------------------------------------------------- 
-NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel)
+NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, BOOL *isIndented)
 {
 	NSString *descriptionString;
 	BOOL addQuotes = NO;
 	
-    if ([object isKindOfClass:[NSString class]])
-        descriptionString = object;
-    else if ([object respondsToSelector:@selector(descriptionWithLocale:indent:)])
+    if ([object respondsToSelector:@selector(descriptionWithLocale:indent:)]) {
+        *isIndented = YES;
         return [(id)object descriptionWithLocale:locale indent:indentLevel];
-    else  if ([object respondsToSelector:@selector(descriptionWithLocale:)])
-        return [(id)object descriptionWithLocale:locale];
-    else
-        descriptionString = [object description];
-	
-	NSRange range = [descriptionString rangeOfString:@" "];
-	if (range.location != NSNotFound)
-		addQuotes = YES;
-	
-	if (addQuotes)
-		return [NSString stringWithFormat:@"\"%@\"", descriptionString];
-	else
-        return descriptionString;
-	
+    }
+    else {
+        *isIndented = NO;
+        if ([object respondsToSelector:@selector(descriptionWithLocale:)]) {
+            descriptionString = [(id)object descriptionWithLocale:locale];
+        }
+        else {
+            descriptionString = [object description];
+        }
+        
+        NSRange range = [descriptionString rangeOfString:@" "];
+        if (range.location != NSNotFound)
+            addQuotes = YES;
+        
+        if (addQuotes)
+            return [NSString stringWithFormat:@"\"%@\"", descriptionString];
+        else
+            return descriptionString;
+    }
 }
 
 #pragma mark -
@@ -129,29 +133,39 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel)
         indentation_chars[i] = 0x0020; // Unicode code point of the space character.
     }
 	
-	NSString *indentation2 = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth2)) autorelease];
+	//NSString *indentation2 = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth2)) autorelease];
 	NSString *indentation = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth)) autorelease];
 	
-	NSString *thisDescription = JXDescriptionForObject(self.contentObject, nil, level+1);
+    BOOL isIndented = NO;
+	NSString *thisDescription = JXDescriptionForObject(self.contentObject, locale, level+1, &isIndented);
 
-	[treeDescription appendFormat:
-	 @"%@%@,\n", 
-	 indentation, 
-	 thisDescription
-	 ];
+    if (isIndented) {
+        [treeDescription appendString:thisDescription]; 
+    }
+    else {
+        [treeDescription appendFormat:
+         @"%@%@,\n", 
+         indentation, 
+         thisDescription
+         ];
+    }
 
 	if (describeChildren && self.childCount > 0) {
 		[treeDescription appendFormat:@"%@%@ = (\n", indentation, @"children"];
-		NSArray *allChildren = self.childNodes;
-		id lastChild = [allChildren lastObject];
+		
+        NSArray *allChildren = self.childNodes;
+        id lastChild = [allChildren lastObject];
 		
 		for (id child in allChildren) {
-			thisDescription = JXDescriptionForObject(child, nil, level+2);
-			[treeDescription appendFormat:@"%1$@%4$@ = {\n%2$@%1$@}%3$@\n", 
-			 indentation2, 
-			 thisDescription,
-			 (child == lastChild) ? @"" : @",",
-			 child];
+			thisDescription = JXDescriptionForObject(child, locale, level+1, &isIndented);
+            if (isIndented) {
+                [treeDescription appendString:thisDescription]; 
+            }
+            else {
+                [treeDescription appendFormat:@"%1$@%2$@\n", 
+                 thisDescription,
+                 (child == lastChild) ? @"" : @","];
+            }
 		}
 		
 		[treeDescription appendFormat:@"%@)\n", indentation];
