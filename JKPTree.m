@@ -85,7 +85,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 //  addChildObject:atIndex:
 //---------------------------------------------------------- 
-- (void) addChildObject:(id)childObject atIndex:(unsigned)index;
+- (void) addChildObject:(id)childObject atIndex:(NSUInteger)index;
 {
     CFTreeContext theContext = JKPTreeCreateContext( childObject );
     CFTreeRef childTree = CFTreeCreate( kCFAllocatorDefault, &theContext );
@@ -130,7 +130,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 //  removeChildObjectAtIndex: 
 //---------------------------------------------------------- 
-- (void) removeChildObjectAtIndex:(unsigned)index;
+- (void) removeChildObjectAtIndex:(NSUInteger)index;
 {
     CFTreeRef child = CFTreeGetChildAtIndex( treeBacking, (CFIndex)index );
     CFTreeRemove( child );
@@ -192,15 +192,15 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 //  childCount
 //---------------------------------------------------------- 
-- (unsigned) childCount;
+- (NSUInteger) childCount;
 {
-    return (unsigned)CFTreeGetChildCount( treeBacking );
+    return (NSUInteger)CFTreeGetChildCount( treeBacking );
 }
 
 //---------------------------------------------------------- 
 //  nodeAtIndex:
 //---------------------------------------------------------- 
-- (JKPTree *) nodeAtIndex:(unsigned)index;
+- (JKPTree *) nodeAtIndex:(NSUInteger)index;
 {
     CFTreeRef child = CFTreeGetChildAtIndex( treeBacking, (CFIndex)index );
     if ( child != NULL )
@@ -211,7 +211,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 //  childObjectAtIndex:
 //---------------------------------------------------------- 
-- (id) childObjectAtIndex:(unsigned)index;
+- (id) childObjectAtIndex:(NSUInteger)index;
 {
     CFTreeRef child = CFTreeGetChildAtIndex( treeBacking, (CFIndex)index );
     CFTreeContext theContext;
@@ -291,7 +291,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 - (BOOL) isLeaf;
 {
-    return ( (unsigned)CFTreeGetChildCount( treeBacking ) ? NO : YES );
+    return ( (NSUInteger)CFTreeGetChildCount( treeBacking ) ? NO : YES );
 }
 
 #pragma mark -

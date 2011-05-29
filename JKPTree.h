@@ -23,9 +23,9 @@
 - (id) initWithContentObject:(id)theContentObject;
 
 - (void) addChildObject:(id)childObject;
-- (void) addChildObject:(id)childObject atIndex:(unsigned)index;
+- (void) addChildObject:(id)childObject atIndex:(NSUInteger)index;
 - (BOOL) removeChildObject:(id)childObject;
-- (void) removeChildObjectAtIndex:(unsigned)index;
+- (void) removeChildObjectAtIndex:(NSUInteger)index;
 - (void) removeAllChildren;
 
 - (JKPTree *) root;
@@ -33,9 +33,9 @@
 - (JKPTree *) firstChild;
 - (JKPTree *) nextSibling;
 
-- (unsigned) childCount;
-- (JKPTree *) nodeAtIndex:(unsigned)index;
-- (id) childObjectAtIndex:(unsigned)index;
+- (NSUInteger) childCount;
+- (JKPTree *) nodeAtIndex:(NSUInteger)index;
+- (id) childObjectAtIndex:(NSUInteger)index;
 
 - (NSArray *) allSiblingNodes;
 - (NSArray *) allSiblingObjects;
