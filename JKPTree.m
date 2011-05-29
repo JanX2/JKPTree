@@ -26,6 +26,34 @@ CFTreeContext JKPTreeCreateContext( id content )
     return context;
 }
 
+//---------------------------------------------------------- 
+//  JXDescriptionForObject()
+//---------------------------------------------------------- 
+NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel)
+{
+	NSString *descriptionString;
+	BOOL addQuotes = NO;
+	
+    if ([object isKindOfClass:[NSString class]])
+        descriptionString = object;
+    else if ([object respondsToSelector:@selector(descriptionWithLocale:indent:)])
+        return [(id)object descriptionWithLocale:locale indent:indentLevel];
+    else  if ([object respondsToSelector:@selector(descriptionWithLocale:)])
+        return [(id)object descriptionWithLocale:locale];
+    else
+        descriptionString = [object description];
+	
+	NSRange range = [descriptionString rangeOfString:@" "];
+	if (range.location != NSNotFound)
+		addQuotes = YES;
+	
+	if (addQuotes)
+		return [NSString stringWithFormat:@"\"%@\"", descriptionString];
+	else
+        return descriptionString;
+	
+}
+
 #pragma mark -
 
 @interface JKPTree (Private)
@@ -66,6 +94,70 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFRelease( treeBacking );
     [super dealloc];
+}
+
+
+- (NSString *)description
+{
+	return [self descriptionWithLocale:nil indent:0 describeChildren:YES];
+}
+
+- (NSString *)descriptionWithChildren:(BOOL)describeChildren;
+{
+	return [self descriptionWithLocale:nil indent:0 describeChildren:describeChildren];
+}
+
+- (NSString *)descriptionWithLocale:(id)locale;
+{
+	return [self descriptionWithLocale:locale indent:0 describeChildren:YES];
+}
+
+- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
+{
+	return [self descriptionWithLocale:locale indent:level describeChildren:YES];
+}
+
+- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level describeChildren:(BOOL)describeChildren;
+{
+	NSMutableString *treeDescription = [[NSMutableString alloc] init];
+	
+	CFIndex indentationDepth = (level+1) * 4;
+	CFIndex indentationDepth2 = (level+2) * 4;
+	
+	UniChar indentation_chars[indentationDepth2];
+    for (int i = 0; i < indentationDepth2; i++) {
+        indentation_chars[i] = 0x0020; // Unicode code point of the space character.
+    }
+	
+	NSString *indentation2 = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth2)) autorelease];
+	NSString *indentation = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth)) autorelease];
+	
+	NSString *thisDescription = JXDescriptionForObject(self.contentObject, nil, level+1);
+
+	[treeDescription appendFormat:
+	 @"%@%@,\n", 
+	 indentation, 
+	 thisDescription
+	 ];
+
+	if (describeChildren && self.childCount > 0) {
+		[treeDescription appendFormat:@"%@%@ = (\n", indentation, @"children"];
+		NSArray *allChildren = self.childNodes;
+		id lastChild = [allChildren lastObject];
+		
+		for (id child in allChildren) {
+			thisDescription = JXDescriptionForObject(child, nil, level+2);
+			[treeDescription appendFormat:@"%1$@%4$@ = {\n%2$@%1$@}%3$@\n", 
+			 indentation2, 
+			 thisDescription,
+			 (child == lastChild) ? @"" : @",",
+			 child];
+		}
+		
+		[treeDescription appendFormat:@"%@)\n", indentation];
+	}
+    
+	return [treeDescription autorelease];
 }
 
 #pragma mark -

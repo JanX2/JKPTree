@@ -22,6 +22,11 @@
 + (id) treeWithContentObject:(id)theContentObject;
 - (id) initWithContentObject:(id)theContentObject;
 
+- (NSString *)descriptionWithLocale:(id)locale;
+- (NSString *)descriptionWithChildren:(BOOL)describeChildren;
+- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
+- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level describeChildren:(BOOL)describeChildren;
+
 - (void) addChildObject:(id)childObject;
 - (void) addChildObject:(id)childObject atIndex:(NSUInteger)index;
 - (BOOL) removeChildObject:(id)childObject;
