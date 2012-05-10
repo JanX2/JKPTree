@@ -15,7 +15,7 @@
 #import <Foundation/Foundation.h>
 
 
-@interface JKPTree : NSObject {
+@interface JKPTree : NSObject <NSFastEnumeration> {
     CFTreeRef       treeBacking;
 }
 

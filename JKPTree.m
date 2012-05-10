@@ -422,6 +422,91 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
     CFTreeSetContext( treeBacking, &theContext );
 }
 
+
+CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
+    CFTreeRef nextNode;
+    
+    // If the node has children, then next node is the first child
+    nextNode = CFTreeGetFirstChild(currentNode);
+
+    if ( nextNode == NULL ) {
+        // If the node has a next sibling, then next node is the next sibling
+        nextNode = CFTreeGetNextSibling( currentNode );
+    }
+    
+    if ( nextNode == NULL ) {
+        // There are no children, and no more siblings, so we need to get the next sibling of the parent.
+        // If that is NULL, we need to get the next sibling of the grandparent, etc.
+        CFTreeRef parent = CFTreeGetParent( currentNode );
+        CFTreeRef node = NULL;
+        while (parent != NULL) {
+            CFTreeRef parentNextSibling = CFTreeGetNextSibling( parent );
+            if (parentNextSibling != NULL) {
+                node = parentNextSibling;
+                break;
+            }
+            else {
+                parent = CFTreeGetParent( parent );
+            }
+        }
+        
+        nextNode = node;
+    }
+    
+    return nextNode;
+}
+
+#define FIRST_CALL          0
+#define ENUMERATION_STARTED 1
+
+#define NODE_ENTRY        0
+
+- (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState *) state 
+                                   objects: (id *) stackbuf 
+                                     count: (NSUInteger) len;
+{
+    // plan of action: extra[0] will contain pointer to node
+    // that contains next object to iterate
+    // because extra[0] is a long, this involves ugly casting
+    if (state->state == FIRST_CALL)
+    {
+        CFTreeRef root = CFTreeFindRoot( treeBacking );
+        
+        // state FIRST_CALL means it's the first call, so get things set up
+        // point somewhere that's guaranteed not to change
+        // unless there are mutations
+        state->mutationsPtr = (unsigned long *)root;
+        
+        // set up extra[0] to point to the head to start in the right place
+        state->extra[NODE_ENTRY] = (long)root;
+        
+        // and update state to indicate that enumeration has started
+        state->state = ENUMERATION_STARTED;
+    }
+    
+    // pull the node out of extra[NODE_ENTRY]
+    CFTreeRef currentNode = (CFTreeRef)state->extra[NODE_ENTRY];
+    
+    // if it's NULL then we're done enumerating, return 0 to end
+    if (currentNode == NULL)  return 0;
+    
+    // otherwise, point itemsPtr at the node's value
+    CFTreeContext theContext;
+    CFTreeGetContext( currentNode, &theContext );
+    state->itemsPtr = (id *)&(theContext.info);
+    
+    // update extra[NODE_ENTRY]
+    //if (currentNode != NULL) // always true!
+    
+    CFTreeRef nextNode = getNextNodeFor(currentNode);
+    
+    state->extra[NODE_ENTRY] = (long)nextNode;
+    
+    // we're returning exactly one item
+    return 1;
+}
+
+
 @end
 
 #pragma mark -
