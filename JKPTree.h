@@ -15,12 +15,27 @@
 #import <Foundation/Foundation.h>
 
 
+struct JKPTOpaqueNode;
+typedef struct JKPTOpaqueNode * JKPTOpaqueNodeRef;
+
+enum {
+    //JKPTEnumerationConcurrent = (1UL << 0),
+    //JKPTEnumerationReverse = (1UL << 1),
+    JKPTEnumerationAncestors = (1UL << 2),
+	JKPTEnumerationNodeObjectNotRequired = 1UL << 31,
+};
+typedef NSUInteger JKPTEnumerationOptions;
+
+
 @interface JKPTree : NSObject <NSFastEnumeration> {
     CFTreeRef       treeBacking;
 }
 
 + (id) treeWithContentObject:(id)theContentObject;
 - (id) initWithContentObject:(id)theContentObject;
+
++ (JKPTree *) treeWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
+- (JKPTree *) initWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
 
 - (NSString *)descriptionWithLocale:(id)locale;
 - (NSString *)descriptionWithChildren:(BOOL)describeChildren;
@@ -52,6 +67,7 @@
 - (id) contentObject;
 - (void) setContentObject:(id) theContentObject;
 
-- (void)enumerateContentObjectsUsingBlock:(void (^)(id obj, BOOL *stop))block;
+- (void)enumerateObjectsWithOptions:(JKPTEnumerationOptions)opts usingBlock:(void (^)(JKPTOpaqueNodeRef node, id nodeObj, id contentObj, BOOL *stop))block;
+- (void)enumerateContentObjectsUsingBlock:(void (^)(id contentObj, BOOL *stop))block;
 
 @end

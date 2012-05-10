@@ -12,6 +12,8 @@
 #import <CoreFoundation/CFString.h>
 #import <CoreFoundation/CFTree.h>
 
+typedef struct __CFTree JKPTOpaqueNode;
+
 //---------------------------------------------------------- 
 //  JKPTreeCreateContext()
 //---------------------------------------------------------- 
@@ -90,6 +92,26 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
     
     return self;
 }
+
++ (JKPTree *) treeWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
+{
+    return [[[JKPTree alloc] initWithOpaqueNode:treeNode] autorelease];
+}
+
+- (JKPTree *) initWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
+{
+    CFTreeRef tree = (CFTreeRef)treeNode;
+    
+    self = [super init];
+    if ( !self )
+        return nil;
+    
+    CFRetain( tree );
+    treeBacking = tree;
+    
+    return self;
+}
+
 
 //---------------------------------------------------------- 
 //  dealloc
@@ -456,10 +478,10 @@ CFTreeRef getNextNodeDepthFirstFor(CFTreeRef currentNode) {
     CFTreeRef nextNode;
     
     // If the node has children, then next node is the first child
-    nextNode = CFTreeGetFirstChild(currentNode);
+    nextNode = CFTreeGetFirstChild( currentNode );
 
     if (nextNode == NULL) {
-        nextNode = getNextForwardNodeDepthFirstFor(currentNode);
+        nextNode = getNextForwardNodeDepthFirstFor( currentNode );
     }
     
     return nextNode;
@@ -525,6 +547,64 @@ CFTreeRef getNextNodeDepthFirstFor(CFTreeRef currentNode) {
     state->extra[NODE_ENTRY] = (long)currentNode;
     
     return objCount;
+}
+
+CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumerationOptions opts)
+{
+    CFTreeRef nextNode;
+    switch (opts) {
+        case JKPTEnumerationAncestors:
+            nextNode = CFTreeGetParent(currentNode);
+            break;
+            
+        default:
+            nextNode = getNextNodeDepthFirstFor(currentNode);
+            break;
+    }
+    
+    return nextNode;
+}
+
+- (void)enumerateObjectsWithOptions:(JKPTEnumerationOptions)opts usingBlock:(void (^)(JKPTOpaqueNodeRef node, id nodeObj, id contentObj, BOOL *stop))block;
+{
+    CFTreeRef currentNode;
+    CFTreeRef endNode;
+    BOOL wantNodeObjects = !(opts & JKPTEnumerationNodeObjectNotRequired);
+    NSUInteger switchOpts = opts & ~JKPTEnumerationNodeObjectNotRequired;
+    
+    switch (switchOpts) {
+        case JKPTEnumerationAncestors:
+            currentNode = CFTreeGetParent(treeBacking);
+            endNode = NULL;
+            break;
+            
+        default:
+            currentNode = treeBacking;
+            endNode = getNextForwardNodeDepthFirstFor(treeBacking);
+            break;
+    }
+    
+    BOOL stop = NO;
+    
+    JKPTree *nodeObject = nil;
+    while (currentNode != endNode)
+    {
+        CFTreeContext theContext;
+        CFTreeGetContext( currentNode, &theContext );
+        
+        if (wantNodeObjects) {
+            nodeObject = [[[JKPTree alloc] initWithCFTree:currentNode] autorelease];
+        }
+        
+        block((JKPTOpaqueNodeRef)currentNode,
+              nodeObject, 
+              (id)theContext.info, 
+              &stop);
+        
+        if (stop)  break;
+        
+        currentNode = getNextNodeWithOptions(currentNode, switchOpts);
+    }
 }
 
 - (void)enumerateContentObjectsUsingBlock:(void (^)(id obj, BOOL *stop))block;
