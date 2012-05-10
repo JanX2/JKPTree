@@ -423,16 +423,11 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
 }
 
 
-CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
+CFTreeRef getNextForwardNodeDepthFirstFor(CFTreeRef currentNode) {
     CFTreeRef nextNode;
     
-    // If the node has children, then next node is the first child
-    nextNode = CFTreeGetFirstChild(currentNode);
-
-    if ( nextNode == NULL ) {
-        // If the node has a next sibling, then next node is the next sibling
-        nextNode = CFTreeGetNextSibling( currentNode );
-    }
+    // If the node has a next sibling, then next node is the next sibling
+    nextNode = CFTreeGetNextSibling( currentNode );
     
     if ( nextNode == NULL ) {
         // There are no children, and no more siblings, so we need to get the next sibling of the parent.
@@ -456,10 +451,25 @@ CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
     return nextNode;
 }
 
+// Depth-first enumeration for CFTree
+CFTreeRef getNextNodeDepthFirstFor(CFTreeRef currentNode) {
+    CFTreeRef nextNode;
+    
+    // If the node has children, then next node is the first child
+    nextNode = CFTreeGetFirstChild(currentNode);
+
+    if (nextNode == NULL) {
+        nextNode = getNextForwardNodeDepthFirstFor(currentNode);
+    }
+    
+    return nextNode;
+}
+
 #define FIRST_CALL          0
 #define ENUMERATION_STARTED 1
 
-#define NODE_ENTRY        0
+#define NODE_ENTRY          0
+#define END_NODE_ENTRY      1
 
 - (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState *) state 
                                    objects: (id *) stackbuf 
@@ -468,16 +478,16 @@ CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
     // Plan of action: extra[NODE_ENTRY] will contain pointer to node
     // that contains the next object to iterate.
     // Because extra[NODE_ENTRY] is a long, this involves ugly casting.
+    // We accumulate multiple nodes at once.
     if (state->state == FIRST_CALL)
     {
-        CFTreeRef root = CFTreeFindRoot( treeBacking );
-        
         // Point mutationsPtr somewhere that's guaranteed not to change
         // unless there are mutations.
-        state->mutationsPtr = (unsigned long *)root;
+        state->mutationsPtr = (unsigned long *)treeBacking;
         
         // Set up extra[NODE_ENTRY] to point to the root so that we start in the right place.
-        state->extra[NODE_ENTRY] = (long)root;
+        state->extra[NODE_ENTRY] = (long)treeBacking;
+        state->extra[END_NODE_ENTRY] = (long)getNextForwardNodeDepthFirstFor(treeBacking);
         
         // and update state to indicate that enumeration has started
         state->state = ENUMERATION_STARTED;
@@ -485,22 +495,36 @@ CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
     
     // Pull the node out of extra[NODE_ENTRY].
     CFTreeRef currentNode = (CFTreeRef)state->extra[NODE_ENTRY];
+    CFTreeRef endNode = (CFTreeRef)state->extra[END_NODE_ENTRY];
     
     // If it's NULL then we're done enumerating, return 0 to end the enumeration.
     if (currentNode == NULL)  return 0;
     
-    // Otherwise, point itemsPtr at the node's value.
-    CFTreeContext theContext;
-    CFTreeGetContext( currentNode, &theContext );
-    state->itemsPtr = (id *)&(theContext.info);
+    // Keep track of how many objects we iterated over so we can return that value.
+    NSUInteger objCount = 0;
     
-    currentNode = getNextNodeFor(currentNode);
+    // We'll be putting objects in stackbuf, so point itemsPtr to it.
+    state->itemsPtr = stackbuf;
+    
+    // Loop through until either we fill up stackbuf or run out of nodes.
+    while (currentNode != endNode && objCount < len)
+    {
+        // Fill current stackbuf location...
+        CFTreeContext theContext;
+        CFTreeGetContext( currentNode, &theContext );
+        *stackbuf++ = theContext.info;
+        
+        // ...move to the next node...
+        currentNode = getNextNodeDepthFirstFor(currentNode);
+        
+        // ...and keep our count.
+        objCount++;
+    }
     
     // Update extra[NODE_ENTRY]
     state->extra[NODE_ENTRY] = (long)currentNode;
     
-    // We're returning exactly one item.
-    return 1;
+    return objCount;
 }
 
 
