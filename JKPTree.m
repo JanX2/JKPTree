@@ -527,6 +527,24 @@ CFTreeRef getNextNodeDepthFirstFor(CFTreeRef currentNode) {
     return objCount;
 }
 
+- (void)enumerateContentObjectsUsingBlock:(void (^)(id obj, BOOL *stop))block;
+{
+    CFTreeRef currentNode = treeBacking;
+    CFTreeRef endNode = getNextForwardNodeDepthFirstFor(treeBacking);;
+    BOOL stop = NO;
+    
+    while (currentNode != endNode)
+    {
+        CFTreeContext theContext;
+        CFTreeGetContext( currentNode, &theContext );
+        
+        block((id)theContext.info, &stop);
+        
+        if (stop)  break;
+        
+        currentNode = getNextNodeDepthFirstFor(currentNode);
+    }
+}
 
 @end
 

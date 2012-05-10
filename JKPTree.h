@@ -52,4 +52,6 @@
 - (id) contentObject;
 - (void) setContentObject:(id) theContentObject;
 
+- (void)enumerateContentObjectsUsingBlock:(void (^)(id obj, BOOL *stop))block;
+
 @end
