@@ -20,7 +20,7 @@ typedef struct JKPTOpaqueNode * JKPTOpaqueNodeRef;
 
 enum {
     //JKPTEnumerationConcurrent = (1UL << 0),
-    //JKPTEnumerationReverse = (1UL << 1),
+    JKPTEnumerationReverse = (1UL << 1),
     JKPTEnumerationAncestors = (1UL << 2),
 	JKPTEnumerationNodeObjectNotRequired = 1UL << 31,
 };

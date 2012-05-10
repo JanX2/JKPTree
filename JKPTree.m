@@ -487,6 +487,83 @@ CFTreeRef getNextNodeDepthFirstFor(CFTreeRef currentNode) {
     return nextNode;
 }
 
+CFTreeRef getPreviousSibling(CFTreeRef currentNode) {
+    CFTreeRef currentNodeParent = CFTreeGetParent(currentNode);
+    if (currentNodeParent == NULL)  return NULL;
+    
+    CFIndex index = 0;
+    CFTreeRef nextNode = CFTreeGetFirstChild(currentNodeParent);
+    while (nextNode == NULL) {
+        if (currentNode == nextNode) {
+            break;
+        }
+        
+        nextNode = CFTreeGetNextSibling(currentNode);
+        index++;
+    }
+    
+    if (index == 0) {
+        return NULL;
+    }
+    else {
+        return CFTreeGetChildAtIndex(currentNodeParent, index-1);
+        
+    }
+}
+
+CFTreeRef getLastChild(CFTreeRef currentNode) {
+    CFIndex childCount = CFTreeGetChildCount(currentNode);
+    
+    if (childCount == 0) {
+        return NULL;
+    }
+    else {
+        return CFTreeGetChildAtIndex(currentNode, childCount-1);
+    }
+}
+
+CFTreeRef getPreviousBackwardsNodeDepthFirstFor(CFTreeRef currentNode) {
+    CFTreeRef prevNode = getPreviousSibling(currentNode);
+    
+    if (prevNode == NULL) {
+        prevNode = CFTreeGetParent(currentNode);
+    }
+
+    return prevNode;
+}
+
+// Depth-first reverse enumeration for CFTree
+CFTreeRef getPreviousNodeDepthFirstFor(CFTreeRef currentNode) {
+    CFTreeRef prevNode;
+    
+    // If the node has a previous sibling,
+    // then we need the last child of the last child of the last child etc.
+    CFTreeRef previousSibling = getPreviousSibling(currentNode);
+    
+    if (previousSibling != NULL) {
+        CFTreeRef previousSiblingLastChild = getLastChild(previousSibling);
+        
+        if (previousSiblingLastChild != NULL) {
+            CFTreeRef lastChild = previousSiblingLastChild;
+            CFTreeRef lastChildLast = getLastChild(lastChild);
+            while (lastChildLast != NULL) {
+                lastChild = lastChildLast;
+                lastChildLast = getLastChild(lastChild);
+            }
+            
+            return lastChild;
+        }
+        else {
+            // The previous sibling has no children, so the previous node is simply the previous sibling.
+            return previousSibling;
+        }
+    }
+
+    // If there are no previous siblings, then the previous node is simply the parent.
+    prevNode = CFTreeGetParent(currentNode);
+    return prevNode;
+}
+
 #define FIRST_CALL          0
 #define ENUMERATION_STARTED 1
 
@@ -553,6 +630,10 @@ CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumeratio
 {
     CFTreeRef nextNode;
     switch (opts) {
+        case JKPTEnumerationReverse:
+            nextNode = getPreviousNodeDepthFirstFor(currentNode);
+            break;
+            
         case JKPTEnumerationAncestors:
             nextNode = CFTreeGetParent(currentNode);
             break;
@@ -573,6 +654,11 @@ CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumeratio
     NSUInteger switchOpts = opts & ~JKPTEnumerationNodeObjectNotRequired;
     
     switch (switchOpts) {
+        case JKPTEnumerationReverse:
+            currentNode = treeBacking;
+            endNode = getPreviousBackwardsNodeDepthFirstFor(treeBacking);
+            break;
+            
         case JKPTEnumerationAncestors:
             currentNode = CFTreeGetParent(treeBacking);
             endNode = NULL;
