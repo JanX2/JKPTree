@@ -465,44 +465,41 @@ CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
                                    objects: (id *) stackbuf 
                                      count: (NSUInteger) len;
 {
-    // plan of action: extra[0] will contain pointer to node
-    // that contains next object to iterate
-    // because extra[0] is a long, this involves ugly casting
+    // Plan of action: extra[NODE_ENTRY] will contain pointer to node
+    // that contains the next object to iterate.
+    // Because extra[NODE_ENTRY] is a long, this involves ugly casting.
     if (state->state == FIRST_CALL)
     {
         CFTreeRef root = CFTreeFindRoot( treeBacking );
         
-        // state FIRST_CALL means it's the first call, so get things set up
-        // point somewhere that's guaranteed not to change
-        // unless there are mutations
+        // Point mutationsPtr somewhere that's guaranteed not to change
+        // unless there are mutations.
         state->mutationsPtr = (unsigned long *)root;
         
-        // set up extra[0] to point to the head to start in the right place
+        // Set up extra[NODE_ENTRY] to point to the root so that we start in the right place.
         state->extra[NODE_ENTRY] = (long)root;
         
         // and update state to indicate that enumeration has started
         state->state = ENUMERATION_STARTED;
     }
     
-    // pull the node out of extra[NODE_ENTRY]
+    // Pull the node out of extra[NODE_ENTRY].
     CFTreeRef currentNode = (CFTreeRef)state->extra[NODE_ENTRY];
     
-    // if it's NULL then we're done enumerating, return 0 to end
+    // If it's NULL then we're done enumerating, return 0 to end the enumeration.
     if (currentNode == NULL)  return 0;
     
-    // otherwise, point itemsPtr at the node's value
+    // Otherwise, point itemsPtr at the node's value.
     CFTreeContext theContext;
     CFTreeGetContext( currentNode, &theContext );
     state->itemsPtr = (id *)&(theContext.info);
     
-    // update extra[NODE_ENTRY]
-    //if (currentNode != NULL) // always true!
-    
     CFTreeRef nextNode = getNextNodeFor(currentNode);
     
+    // Update extra[NODE_ENTRY]
     state->extra[NODE_ENTRY] = (long)nextNode;
     
-    // we're returning exactly one item
+    // We're returning exactly one item.
     return 1;
 }
 
