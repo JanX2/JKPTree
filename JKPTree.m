@@ -494,10 +494,10 @@ CFTreeRef getNextNodeFor(CFTreeRef currentNode) {
     CFTreeGetContext( currentNode, &theContext );
     state->itemsPtr = (id *)&(theContext.info);
     
-    CFTreeRef nextNode = getNextNodeFor(currentNode);
+    currentNode = getNextNodeFor(currentNode);
     
     // Update extra[NODE_ENTRY]
-    state->extra[NODE_ENTRY] = (long)nextNode;
+    state->extra[NODE_ENTRY] = (long)currentNode;
     
     // We're returning exactly one item.
     return 1;
