@@ -15,10 +15,10 @@
 }
 
 @property (nonatomic, readwrite) int indent;
-@property (nonatomic, readwrite) unichar c;
+@property (nonatomic, readwrite) unichar unichar;
 
-+ (id)frameWithIndent:(int)theIndent c:(unichar)theC;
-- (id)initWithIndent:(int)theIndent c:(unichar)theC;
++ (id)frameWithIndent:(int)theIndent unichar:(unichar)theUnichar;
+- (id)initWithIndent:(int)theIndent unichar:(unichar)theUnichar;
 
 @end
 
@@ -26,22 +26,22 @@
 @implementation JXFrame
 
 @synthesize indent = _indent;
-@synthesize c = _c;
+@synthesize unichar = _c;
 
-+ (id)frameWithIndent:(int)theIndent c:(unichar)theC;
++ (id)frameWithIndent:(int)theIndent unichar:(unichar)theUnichar;
 {
-    id result = [[[self class] alloc] initWithIndent:theIndent c:theC];
+    id result = [[[self class] alloc] initWithIndent:theIndent unichar:theUnichar];
 	
     return [result autorelease];
 }
 
-- (id)initWithIndent:(int)theIndent c:(unichar)theC
+- (id)initWithIndent:(int)theIndent unichar:(unichar)theUnichar
 {
     self = [super init];
 	
     if (self) {
         _indent = theIndent;
-        _c = theC;
+        _c = theUnichar;
     }
 	
     return self;
@@ -51,61 +51,61 @@
 
 
 static void
-pushpfx(int indent, unichar c, NSMutableArray *sp)
+pushPrefix(int indent, unichar c, NSMutableArray *stack)
 {
-    JXFrame *frame = [JXFrame frameWithIndent:indent c:c];
-    [sp addObject:frame];
+    JXFrame *frame = [JXFrame frameWithIndent:indent unichar:c];
+    [stack addObject:frame];
+}
+
+
+NS_INLINE void
+popPrefix(NSMutableArray *stack)
+{
+    [stack removeLastObject];
 }
 
 
 static void
-poppfx(NSMutableArray *sp)
-{
-    [sp removeLastObject];
-}
-
-
-static void
-changepfx(NSMutableArray *sp, unichar c)
+changePrefix(NSMutableArray *stack, unichar c)
 {
     unichar ch;
 	
-    if (sp.count == 0)  return;
+    if (stack.count == 0)  return;
 	
-	JXFrame *frame = [sp lastObject];
-    ch = frame.c;
+	JXFrame *frame = [stack lastObject];
+    ch = frame.unichar;
 	
     if ( ch == '+' || ch == '|' ) {
-		frame.c = c;
+		frame.unichar = c;
 	}
 }
 
 
 static void
-printpfx(NSMutableArray *sp, NSMutableString *out)
+printPrefix(NSMutableArray *stack, NSMutableString *out)
 {
     unichar c;
 	
-	NSUInteger stackCount = sp.count;
+	NSUInteger stackCount = stack.count;
     if (stackCount == 0)  return;
 	
-	JXFrame *frame = [sp lastObject];
-    c = frame.c;
+	JXFrame *frame = [stack lastObject];
+    c = frame.unichar;
 	
     if ( c == '+' || c == '-' ) {
 		[out appendFormat:@"--%C", c];
-		frame.c = (c == '-') ? ' ' : '|';
+		frame.unichar = (c == '-') ? ' ' : '|';
     }
     else {
 		for (NSUInteger i = 0; i < stackCount; i++ ) {
 			if (i > 0) {
 				[out appendString:@"  "];
 			}
-			frame = [sp objectAtIndex:i];
-			c = frame.c;
+			frame = [stack objectAtIndex:i];
+			c = frame.unichar;
 			[out appendFormat:@"%*s%C", frame.indent + 2, " ", c];
 			if ( c == '`' ) {
-				frame.c = ' ';
+				frame.unichar = ' ';
 			}
 		}
 	}
@@ -115,16 +115,16 @@ printpfx(NSMutableArray *sp, NSMutableString *out)
 
 
 static void
-dumptree(CFTreeRef currentNode, NSMutableArray *sp, NSMutableString *out)
+dumpTree(CFTreeRef currentNode, NSMutableArray *stack, NSMutableString *out)
 {
     while (currentNode != NULL) {
 		CFTreeRef nextSiblingNode = CFTreeGetNextSibling(currentNode);
 		
 		if (nextSiblingNode == NULL) {
-			changepfx(sp, '`');
+			changePrefix(stack, '`');
 		}
 		
-		printpfx(sp, out);
+		printPrefix(stack, out);
 		
 		CFTreeContext theContext;
 		CFTreeGetContext(currentNode, &theContext);
@@ -136,9 +136,9 @@ dumptree(CFTreeRef currentNode, NSMutableArray *sp, NSMutableString *out)
 		CFTreeRef firstChildNode = CFTreeGetFirstChild(currentNode);
 		if (firstChildNode != NULL) {
 			BOOL hasSibling = (CFTreeGetNextSibling(firstChildNode) != NULL);
-			pushpfx(d, (hasSibling ? '+' : '-'), sp);
-			dumptree(firstChildNode, sp, out);
-			poppfx(sp);
+			pushPrefix(d, (hasSibling ? '+' : '-'), stack);
+			dumpTree(firstChildNode, stack, out);
+			popPrefix(stack);
 		}
 		else {
 			[out appendString:@"\n"];
@@ -155,8 +155,8 @@ void makeTreeDescription(CFTreeRef rootNode, NSMutableString *out, NSString *tit
 	[out appendString:title];
 	
 	BOOL hasSibling = (CFTreeGetNextSibling(rootNode) != NULL);
-	pushpfx(title.length, (hasSibling ? '+' : '-'), stack);
-	dumptree(rootNode, stack, out);
+	pushPrefix(title.length, (hasSibling ? '+' : '-'), stack);
+	dumpTree(rootNode, stack, out);
 	
 	[stack release];
 }
