@@ -122,16 +122,16 @@ CFTreeContext JKPTreeCreateContext( id content )
                    describeChildren:(BOOL)describeChildren
                          nestedMode:(BOOL)nestedMode;
 {
+	NSString *indentationString = @"    ";
+	NSUInteger indentationStringLength = 4;
+	
 	NSMutableString *treeDescription = [[NSMutableString alloc] init];
 	
     if (nestedMode == NO) {
-        makeTreeDescription(treeBacking, locale, treeDescription, @"");
+        makeTreeDescription(treeBacking, locale, treeDescription, (level * indentationStringLength), @"");
         return [treeDescription autorelease];
     }
 
-	NSString *indentationString = @"    ";
-	NSUInteger indentationStringLength = indentationString.length;
-	
 	NSUInteger indentationDepth = (level+1) * indentationStringLength;
 	//NSUInteger indentationDepth2 = (level+2) * indentationStringLength;
 	

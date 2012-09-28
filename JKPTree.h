@@ -26,6 +26,8 @@ enum {
 };
 typedef NSUInteger JKPTEnumerationOptions;
 
+// If we want the tree description to be formatted properly when the tree is contained in a collection, we can temporarily “subclass” NSArray here.
+// For details see http://stackoverflow.com/questions/7521683/nsdictionary-description-formatting-problem-treats-structure-like-char-data
 
 @interface JKPTree : NSObject <NSFastEnumeration> {
     CFTreeRef       treeBacking;

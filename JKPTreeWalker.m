@@ -119,14 +119,15 @@ dumpTree(CFTreeRef currentNode, id locale, NSMutableArray *stack, NSMutableStrin
 }
 
 
-void makeTreeDescription(CFTreeRef rootNode, id locale, NSMutableString *out, NSString *title)
+void makeTreeDescription(CFTreeRef rootNode, id locale, NSMutableString *out, NSUInteger indentationDepth, NSString *title)
 {
     NSMutableArray *stack = [[NSMutableArray alloc] init];
 			
 	[out appendString:title];
+	indentationDepth += title.length;
 	
 	BOOL hasSibling = (CFTreeGetNextSibling(rootNode) != NULL);
-	pushPrefix(title.length, (hasSibling ? '+' : '-'), stack);
+	pushPrefix(indentationDepth, (hasSibling ? '+' : '-'), stack);
 	dumpTree(rootNode, locale, stack, out);
 	
 	[stack release];
