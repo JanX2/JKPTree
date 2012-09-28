@@ -147,16 +147,14 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
 {
 	NSMutableString *treeDescription = [[NSMutableString alloc] init];
 	
-	CFIndex indentationDepth = (level+1) * 4;
-	CFIndex indentationDepth2 = (level+2) * 4;
+	NSString *indentationString = @"    ";
+	NSUInteger indentationStringLength = indentationString.length;
 	
-	UniChar indentation_chars[indentationDepth2];
-    for (int i = 0; i < indentationDepth2; i++) {
-        indentation_chars[i] = 0x0020; // Unicode code point of the space character.
-    }
+	NSUInteger indentationDepth = (level+1) * indentationStringLength;
+	//NSUInteger indentationDepth2 = (level+2) * indentationStringLength;
 	
-	//NSString *indentation2 = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth2)) autorelease];
-	NSString *indentation = [NSMakeCollectable(CFStringCreateWithCharacters(kCFAllocatorDefault, (const UniChar *)&indentation_chars, indentationDepth)) autorelease];
+	NSString *indentation = [@"" stringByPaddingToLength:indentationDepth withString:indentationString startingAtIndex:0];
+	//NSString *indentation2 = [@"" stringByPaddingToLength:indentationDepth2 withString:indentationString startingAtIndex:0];
 	
     BOOL isIndented = NO;
 	NSString *thisDescription = JXDescriptionForObject(self.contentObject, locale, level+1, &isIndented);
