@@ -9,6 +9,8 @@
 //  Released under the BSD software licence.
 //
 
+#import "NSObject+JXCustomDescription.h"
+
 @interface JXFrame : NSObject {
     int indent;
     unichar c;
@@ -81,13 +83,14 @@ changePrefix(NSMutableArray *stack, unichar c)
 }
 
 
-static void
+static NSUInteger
 printPrefix(NSMutableArray *stack, NSMutableString *out)
 {
-    unichar c;
+    NSUInteger length = out.length;
+	unichar c;
 	
 	NSUInteger stackCount = stack.count;
-    if (stackCount == 0)  return;
+    if (stackCount == 0)  return 0;
 	
 	JXFrame *frame = [stack lastObject];
     c = frame.unichar;
@@ -111,11 +114,14 @@ printPrefix(NSMutableArray *stack, NSMutableString *out)
 	}
 	
 	[out appendString:@"--"];
+	
+	length = out.length - length;
+	return length;
 }
 
 
 static void
-dumpTree(CFTreeRef currentNode, NSMutableArray *stack, NSMutableString *out)
+dumpTree(CFTreeRef currentNode, id locale, NSMutableArray *stack, NSMutableString *out)
 {
     while (currentNode != NULL) {
 		CFTreeRef nextSiblingNode = CFTreeGetNextSibling(currentNode);
@@ -124,12 +130,16 @@ dumpTree(CFTreeRef currentNode, NSMutableArray *stack, NSMutableString *out)
 			changePrefix(stack, '`');
 		}
 		
-		printPrefix(stack, out);
+		NSUInteger prefixLength = printPrefix(stack, out);
+		NSUInteger nextIndentationLevel = ((prefixLength + 2) / 4) + 1;
 		
 		CFTreeContext theContext;
 		CFTreeGetContext(currentNode, &theContext);
 		id contentObject = (id)theContext.info;
-		NSString *contentObjectDescription = [NSString stringWithFormat:@"[%@]", [contentObject description]];
+		NSString *contentObjectDescription = [NSString stringWithFormat:@"[%@]",
+											  [contentObject jx_descriptionWithLocale:locale
+																			   indent:nextIndentationLevel
+																		   isIndented:NULL]];
 		[out appendString:contentObjectDescription];
 		int d = contentObjectDescription.length;
 		
@@ -137,7 +147,7 @@ dumpTree(CFTreeRef currentNode, NSMutableArray *stack, NSMutableString *out)
 		if (firstChildNode != NULL) {
 			BOOL hasSibling = (CFTreeGetNextSibling(firstChildNode) != NULL);
 			pushPrefix(d, (hasSibling ? '+' : '-'), stack);
-			dumpTree(firstChildNode, stack, out);
+			dumpTree(firstChildNode, locale, stack, out);
 			popPrefix(stack);
 		}
 		else {
@@ -148,7 +158,7 @@ dumpTree(CFTreeRef currentNode, NSMutableArray *stack, NSMutableString *out)
 }
 
 
-void makeTreeDescription(CFTreeRef rootNode, NSMutableString *out, NSString *title)
+void makeTreeDescription(CFTreeRef rootNode, id locale, NSMutableString *out, NSString *title)
 {
     NSMutableArray *stack = [[NSMutableArray alloc] init];
 			
@@ -156,7 +166,7 @@ void makeTreeDescription(CFTreeRef rootNode, NSMutableString *out, NSString *tit
 	
 	BOOL hasSibling = (CFTreeGetNextSibling(rootNode) != NULL);
 	pushPrefix(title.length, (hasSibling ? '+' : '-'), stack);
-	dumpTree(rootNode, stack, out);
+	dumpTree(rootNode, locale, stack, out);
 	
 	[stack release];
 }

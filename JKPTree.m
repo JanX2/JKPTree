@@ -12,6 +12,8 @@
 #import <CoreFoundation/CFString.h>
 #import <CoreFoundation/CFTree.h>
 
+#import "NSObject+JXCustomDescription.h"
+
 #import "treeWalker.m"
 
 const BOOL nestedModeIsDefault = NO;
@@ -30,38 +32,6 @@ CFTreeContext JKPTreeCreateContext( id content )
     context.release         = CFRelease;
     context.copyDescription = CFCopyDescription;
     return context;
-}
-
-//---------------------------------------------------------- 
-//  JXDescriptionForObject()
-//---------------------------------------------------------- 
-NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, BOOL *isIndented)
-{
-	NSString *descriptionString;
-	BOOL addQuotes = NO;
-	
-    if ([object respondsToSelector:@selector(descriptionWithLocale:indent:)]) {
-        *isIndented = YES;
-        return [(id)object descriptionWithLocale:locale indent:indentLevel];
-    }
-    else {
-        *isIndented = NO;
-        if ([object respondsToSelector:@selector(descriptionWithLocale:)]) {
-            descriptionString = [(id)object descriptionWithLocale:locale];
-        }
-        else {
-            descriptionString = [object description];
-        }
-        
-        NSRange range = [descriptionString rangeOfString:@" "];
-        if (range.location != NSNotFound)
-            addQuotes = YES;
-        
-        if (addQuotes)
-            return [NSString stringWithFormat:@"\"%@\"", descriptionString];
-        else
-            return descriptionString;
-    }
 }
 
 #pragma mark -
@@ -155,7 +125,7 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
 	NSMutableString *treeDescription = [[NSMutableString alloc] init];
 	
     if (nestedMode == NO) {
-        makeTreeDescription(treeBacking, treeDescription, @"");
+        makeTreeDescription(treeBacking, locale, treeDescription, @"");
         return [treeDescription autorelease];
     }
 
@@ -169,7 +139,7 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
 	//NSString *indentation2 = [@"" stringByPaddingToLength:indentationDepth2 withString:indentationString startingAtIndex:0];
 	
     BOOL isIndented = NO;
-	NSString *thisDescription = JXDescriptionForObject(self.contentObject, locale, level+1, &isIndented);
+	NSString *thisDescription = [self.contentObject jx_descriptionWithLocale:locale indent:level+1 isIndented:&isIndented];
 
     if (isIndented) {
         [treeDescription appendString:thisDescription]; 
@@ -189,7 +159,7 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
         id lastChild = [allChildren lastObject];
 		
 		for (id child in allChildren) {
-			thisDescription = JXDescriptionForObject(child, locale, level+1, &isIndented);
+			thisDescription = [child jx_descriptionWithLocale:locale indent:level+1 isIndented:&isIndented];
             if (isIndented) {
                 [treeDescription appendString:thisDescription]; 
             }
