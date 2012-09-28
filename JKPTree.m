@@ -99,22 +99,22 @@ CFTreeContext JKPTreeCreateContext( id content )
 
 - (NSString *)description
 {
-	return [self descriptionWithLocale:nil indent:0 describeChildren:YES nestedMode:nestedModeIsDefault];
+    return [self descriptionWithLocale:nil indent:0 describeChildren:YES nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithChildren:(BOOL)describeChildren;
 {
-	return [self descriptionWithLocale:nil indent:0 describeChildren:describeChildren nestedMode:nestedModeIsDefault];
+    return [self descriptionWithLocale:nil indent:0 describeChildren:describeChildren nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithLocale:(id)locale;
 {
-	return [self descriptionWithLocale:locale indent:0 describeChildren:YES nestedMode:nestedModeIsDefault];
+    return [self descriptionWithLocale:locale indent:0 describeChildren:YES nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
 {
-	return [self descriptionWithLocale:locale indent:level describeChildren:YES nestedMode:nestedModeIsDefault];
+    return [self descriptionWithLocale:locale indent:level describeChildren:YES nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithLocale:(id)locale
@@ -122,24 +122,24 @@ CFTreeContext JKPTreeCreateContext( id content )
                    describeChildren:(BOOL)describeChildren
                          nestedMode:(BOOL)nestedMode;
 {
-	NSString *indentationString = @"    ";
-	NSUInteger indentationStringLength = 4;
-	
-	NSMutableString *treeDescription = [[NSMutableString alloc] init];
-	
+    NSString *indentationString = @"    ";
+    NSUInteger indentationStringLength = 4;
+    
+    NSMutableString *treeDescription = [[NSMutableString alloc] init];
+    
     if (nestedMode == NO) {
         makeTreeDescription(treeBacking, locale, treeDescription, (level * indentationStringLength), @"");
         return [treeDescription autorelease];
     }
 
-	NSUInteger indentationDepth = (level+1) * indentationStringLength;
-	//NSUInteger indentationDepth2 = (level+2) * indentationStringLength;
-	
-	NSString *indentation = [@"" stringByPaddingToLength:indentationDepth withString:indentationString startingAtIndex:0];
-	//NSString *indentation2 = [@"" stringByPaddingToLength:indentationDepth2 withString:indentationString startingAtIndex:0];
-	
+    NSUInteger indentationDepth = (level+1) * indentationStringLength;
+    //NSUInteger indentationDepth2 = (level+2) * indentationStringLength;
+    
+    NSString *indentation = [@"" stringByPaddingToLength:indentationDepth withString:indentationString startingAtIndex:0];
+    //NSString *indentation2 = [@"" stringByPaddingToLength:indentationDepth2 withString:indentationString startingAtIndex:0];
+    
     BOOL isIndented = NO;
-	NSString *thisDescription = [self.contentObject jx_descriptionWithLocale:locale indent:level+1 isIndented:&isIndented];
+    NSString *thisDescription = [self.contentObject jx_descriptionWithLocale:locale indent:level+1 isIndented:&isIndented];
 
     if (isIndented) {
         [treeDescription appendString:thisDescription]; 
@@ -152,14 +152,14 @@ CFTreeContext JKPTreeCreateContext( id content )
          ];
     }
 
-	if (describeChildren && self.childCount > 0) {
-		[treeDescription appendFormat:@"%@%@ = (\n", indentation, @"children"];
-		
+    if (describeChildren && self.childCount > 0) {
+        [treeDescription appendFormat:@"%@%@ = (\n", indentation, @"children"];
+        
         NSArray *allChildren = self.childNodes;
         id lastChild = [allChildren lastObject];
-		
-		for (id child in allChildren) {
-			thisDescription = [child jx_descriptionWithLocale:locale indent:level+1 isIndented:&isIndented];
+        
+        for (id child in allChildren) {
+            thisDescription = [child jx_descriptionWithLocale:locale indent:level+1 isIndented:&isIndented];
             if (isIndented) {
                 [treeDescription appendString:thisDescription]; 
             }
@@ -168,12 +168,12 @@ CFTreeContext JKPTreeCreateContext( id content )
                  thisDescription,
                  (child == lastChild) ? @"" : @","];
             }
-		}
-		
-		[treeDescription appendFormat:@"%@)\n", indentation];
-	}
+        }
+        
+        [treeDescription appendFormat:@"%@)\n", indentation];
+    }
     
-	return [treeDescription autorelease];
+    return [treeDescription autorelease];
 }
 
 #pragma mark -
