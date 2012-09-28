@@ -14,7 +14,7 @@
 
 #import "NSObject+JXCustomDescription.h"
 
-#import "treeWalker.m"
+#import "JKPTreeWalker.m"
 
 const BOOL nestedModeIsDefault = NO;
 
