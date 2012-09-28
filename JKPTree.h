@@ -40,7 +40,10 @@ typedef NSUInteger JKPTEnumerationOptions;
 - (NSString *)descriptionWithLocale:(id)locale;
 - (NSString *)descriptionWithChildren:(BOOL)describeChildren;
 - (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
-- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level describeChildren:(BOOL)describeChildren;
+- (NSString *)descriptionWithLocale:(id)locale
+                             indent:(NSUInteger)level
+                   describeChildren:(BOOL)describeChildren
+                         nestedMode:(BOOL)nestedMode;
 
 - (void) addChildObject:(id)childObject;
 - (void) addChildObject:(id)childObject atIndex:(NSUInteger)index;

@@ -12,6 +12,10 @@
 #import <CoreFoundation/CFString.h>
 #import <CoreFoundation/CFTree.h>
 
+#import "treeWalker.m"
+
+const BOOL nestedModeIsDefault = NO;
+
 typedef struct __CFTree JKPTOpaqueNode;
 
 //---------------------------------------------------------- 
@@ -125,28 +129,36 @@ NSString *JXDescriptionForObject(id object, id locale, NSUInteger indentLevel, B
 
 - (NSString *)description
 {
-	return [self descriptionWithLocale:nil indent:0 describeChildren:YES];
+	return [self descriptionWithLocale:nil indent:0 describeChildren:YES nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithChildren:(BOOL)describeChildren;
 {
-	return [self descriptionWithLocale:nil indent:0 describeChildren:describeChildren];
+	return [self descriptionWithLocale:nil indent:0 describeChildren:describeChildren nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithLocale:(id)locale;
 {
-	return [self descriptionWithLocale:locale indent:0 describeChildren:YES];
+	return [self descriptionWithLocale:locale indent:0 describeChildren:YES nestedMode:nestedModeIsDefault];
 }
 
 - (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level;
 {
-	return [self descriptionWithLocale:locale indent:level describeChildren:YES];
+	return [self descriptionWithLocale:locale indent:level describeChildren:YES nestedMode:nestedModeIsDefault];
 }
 
-- (NSString *)descriptionWithLocale:(id)locale indent:(NSUInteger)level describeChildren:(BOOL)describeChildren;
+- (NSString *)descriptionWithLocale:(id)locale
+                             indent:(NSUInteger)level
+                   describeChildren:(BOOL)describeChildren
+                         nestedMode:(BOOL)nestedMode;
 {
 	NSMutableString *treeDescription = [[NSMutableString alloc] init];
 	
+    if (nestedMode == NO) {
+        makeTreeDescription(treeBacking, treeDescription, @"");
+        return [treeDescription autorelease];
+    }
+
 	NSString *indentationString = @"    ";
 	NSUInteger indentationStringLength = indentationString.length;
 	
