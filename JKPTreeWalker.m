@@ -119,7 +119,8 @@ dumpTree(CFTreeRef currentNode, id locale, NSMutableArray *stack, NSMutableStrin
 }
 
 
-void makeTreeDescription(CFTreeRef rootNode, id locale, NSMutableString *out, NSUInteger indentationDepth, NSString *title)
+static void
+makeTreeDescription(CFTreeRef rootNode, id locale, NSMutableString *out, NSUInteger indentationDepth, NSString *title)
 {
     NSMutableArray *stack = [[NSMutableArray alloc] init];
 			
