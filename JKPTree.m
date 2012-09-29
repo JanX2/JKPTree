@@ -13,6 +13,8 @@
 #import <CoreFoundation/CFString.h>
 #import <CoreFoundation/CFTree.h>
 
+#import "JXArcCompatibilityMacros.h"
+
 #import "NSObject+JXCustomDescription.h"
 
 #import "JKPTreeWalker.m"
@@ -50,7 +52,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 + (id) treeWithContentObject:(id)theContentObject;
 {
-    return [[[self alloc] initWithContentObject:theContentObject] autorelease];
+    return JX_AUTORELEASE([[self alloc] initWithContentObject:theContentObject]);
 }
 
 //---------------------------------------------------------- 
@@ -70,7 +72,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 
 + (JKPTree *) treeWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
 {
-    return [[[JKPTree alloc] initWithOpaqueNode:treeNode] autorelease];
+    return JX_AUTORELEASE([[JKPTree alloc] initWithOpaqueNode:treeNode]);
 }
 
 - (JKPTree *) initWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
@@ -130,7 +132,7 @@ CFTreeContext JKPTreeCreateContext( id content )
     
     if (nestedMode == NO) {
         makeTreeDescription(treeBacking, locale, treeDescription, (level * indentationStringLength), @"");
-        return [treeDescription autorelease];
+        return JX_AUTORELEASE(treeDescription);
     }
 
     NSUInteger indentationDepth = (level+1) * indentationStringLength;
@@ -174,7 +176,7 @@ CFTreeContext JKPTreeCreateContext( id content )
         [treeDescription appendFormat:@"%@)\n", indentation];
     }
     
-    return [treeDescription autorelease];
+    return JX_AUTORELEASE(treeDescription);
 }
 
 #pragma mark -
@@ -223,7 +225,7 @@ CFTreeContext JKPTreeCreateContext( id content )
         CFTreeGetContext( child, &theContext );
         
         // is this the node...?
-        if ( ![childObject isEqual:(id)theContext.info] )
+        if ( ![childObject isEqual:JX_BRIDGED_CAST(id, theContext.info)] )
             continue;
         
         // we found it...
@@ -262,7 +264,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 - (JKPTree *) root;
 {
     CFTreeRef root = CFTreeFindRoot( treeBacking );
-    return [[[JKPTree alloc] initWithCFTree:root] autorelease];
+    return JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:root]);
 }
 
 //---------------------------------------------------------- 
@@ -272,7 +274,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFTreeRef parent = CFTreeGetParent( treeBacking );
     if ( parent != NULL )
-        return [[[JKPTree alloc] initWithCFTree:parent] autorelease];
+        return JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:parent]);
     return nil;
 }
 
@@ -283,7 +285,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFTreeRef firstChild = CFTreeGetFirstChild( treeBacking );
     if ( firstChild != NULL )
-        return [[[JKPTree alloc] initWithCFTree:firstChild] autorelease];
+        return JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:firstChild]);
     return nil;
 }
 
@@ -294,7 +296,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFTreeRef nextSibling = CFTreeGetNextSibling( treeBacking );
     if ( nextSibling != NULL )
-        return [[[JKPTree alloc] initWithCFTree:nextSibling] autorelease];
+        return JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:nextSibling]);
     return nil;
 }
 
@@ -313,7 +315,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFTreeRef child = CFTreeGetChildAtIndex( treeBacking, (CFIndex)index );
     if ( child != NULL )
-        return [[[JKPTree alloc] initWithCFTree:child] autorelease];
+        return JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:child]);
     return nil; 
 }
 
@@ -325,7 +327,7 @@ CFTreeContext JKPTreeCreateContext( id content )
     CFTreeRef child = CFTreeGetChildAtIndex( treeBacking, (CFIndex)index );
     CFTreeContext theContext;
     CFTreeGetContext( child, &theContext );
-    return (id)theContext.info;
+    return JX_BRIDGED_CAST(id, theContext.info);
 }
 
 //---------------------------------------------------------- 
@@ -361,12 +363,12 @@ CFTreeContext JKPTreeCreateContext( id content )
     {
         JKPTree *child = [[JKPTree alloc] initWithCFTree:children[i]];
         [childWrappers addObject:child];
-        [child release];
+        JX_RELEASE(child);
     }
     
     // cleanup and return result...
     free( children );
-    return ( childCount ? [[childWrappers copy] autorelease] : nil );
+    return ( childCount ? JX_AUTORELEASE([childWrappers copy]) : nil );
 }
 
 //---------------------------------------------------------- 
@@ -386,13 +388,14 @@ CFTreeContext JKPTreeCreateContext( id content )
     {
         CFTreeContext theContext;
         CFTreeGetContext( children[i], &theContext );
-        if ( (id)theContext.info )
-            [childObjects addObject:(id)theContext.info];
+        id content = JX_BRIDGED_CAST(id, theContext.info);
+        if ( content )
+            [childObjects addObject:content];
     }
     
     // cleanup and return result...
     free( children );
-    return ( [childObjects count] ? [[childObjects copy] autorelease] : nil );
+    return ( [childObjects count] ? JX_AUTORELEASE([childObjects copy]) : nil );
 }
 
 //---------------------------------------------------------- 
@@ -413,7 +416,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFTreeContext theContext;
     CFTreeGetContext( treeBacking, &theContext );
-    return (id)theContext.info;
+    return JX_BRIDGED_CAST(id, theContext.info);
 }
 
 //---------------------------------------------------------- 
@@ -660,12 +663,12 @@ CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumeratio
         CFTreeGetContext( currentNode, &theContext );
         
         if (wantNodeObjects) {
-            nodeObject = [[[JKPTree alloc] initWithCFTree:currentNode] autorelease];
+            nodeObject = JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:currentNode]);
         }
         
         block((JKPTOpaqueNodeRef)currentNode,
               nodeObject, 
-              (id)theContext.info, 
+              JX_BRIDGED_CAST(id, theContext.info), 
               &stop);
         
         if (stop)  break;
@@ -685,7 +688,7 @@ CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumeratio
         CFTreeContext theContext;
         CFTreeGetContext( currentNode, &theContext );
         
-        block((id)theContext.info, &stop);
+        block(JX_BRIDGED_CAST(id, theContext.info), &stop);
         
         if (stop)  break;
         

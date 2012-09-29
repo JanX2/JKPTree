@@ -131,5 +131,5 @@ makeTreeDescription(CFTreeRef rootNode, id locale, NSMutableString *out, NSUInte
 	pushPrefix(indentationDepth, (hasSibling ? '+' : '-'), stack);
 	dumpTree(rootNode, locale, stack, out);
 	
-	[stack release];
+	JX_RELEASE(stack);
 }

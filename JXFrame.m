@@ -10,6 +10,8 @@
 
 #import "JXFrame.h"
 
+#import "JXArcCompatibilityMacros.h"
+
 @implementation JXFrame
 
 @synthesize indent = _indent;
@@ -19,7 +21,7 @@
 {
     id result = [[[self class] alloc] initWithIndent:theIndent unichar:theUnichar];
 	
-    return [result autorelease];
+    return JX_AUTORELEASE(result);
 }
 
 - (id)initWithIndent:(int)theIndent unichar:(unichar)theUnichar
