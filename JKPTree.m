@@ -17,8 +17,6 @@
 
 #import "NSObject+JXCustomDescription.h"
 
-#import "JKPTreeWalker.m"
-
 const BOOL nestedModeIsDefault = NO;
 
 typedef struct __CFTree JKPTOpaqueNode;
@@ -36,6 +34,18 @@ CFTreeContext JKPTreeCreateContext( id content )
     context.copyDescription = CFCopyDescription;
     return context;
 }
+
+NS_INLINE id getContentObject( CFTreeRef target )
+{
+    CFTreeContext theContext;
+    CFTreeGetContext( target, &theContext );
+    id content = JX_BRIDGED_CAST(id, theContext.info);
+    return content;
+}
+
+#include "JKPTreeWalker.m"
+
+//----------------------------------------------------------
 
 #pragma mark -
 
@@ -221,11 +231,10 @@ CFTreeContext JKPTreeCreateContext( id content )
     for ( i = 0; i < childCount; i++ )
     {
         CFTreeRef child = children[i];
-        CFTreeContext theContext;
-        CFTreeGetContext( child, &theContext );
+        id content = getContentObject(child);
         
         // is this the node...?
-        if ( ![childObject isEqual:JX_BRIDGED_CAST(id, theContext.info)] )
+        if ( ![childObject isEqual:content] )
             continue;
         
         // we found it...
@@ -319,15 +328,13 @@ CFTreeContext JKPTreeCreateContext( id content )
     return nil; 
 }
 
-//---------------------------------------------------------- 
 //  childObjectAtIndex:
 //---------------------------------------------------------- 
 - (id) childObjectAtIndex:(NSUInteger)index;
 {
     CFTreeRef child = CFTreeGetChildAtIndex( treeBacking, (CFIndex)index );
-    CFTreeContext theContext;
-    CFTreeGetContext( child, &theContext );
-    return JX_BRIDGED_CAST(id, theContext.info);
+    id content = getContentObject(child);
+    return content;
 }
 
 //---------------------------------------------------------- 
@@ -371,7 +378,7 @@ CFTreeContext JKPTreeCreateContext( id content )
     return ( childCount ? JX_AUTORELEASE([childWrappers copy]) : nil );
 }
 
-//---------------------------------------------------------- 
+//----------------------------------------------------------
 //  childObjects
 //---------------------------------------------------------- 
 - (NSArray *) childObjects;
@@ -386,9 +393,7 @@ CFTreeContext JKPTreeCreateContext( id content )
     CFIndex i;
     for ( i = 0; i < childCount; i++ )
     {
-        CFTreeContext theContext;
-        CFTreeGetContext( children[i], &theContext );
-        id content = JX_BRIDGED_CAST(id, theContext.info);
+        id content = getContentObject(children[i]);
         if ( content )
             [childObjects addObject:content];
     }
@@ -414,9 +419,8 @@ CFTreeContext JKPTreeCreateContext( id content )
 //---------------------------------------------------------- 
 - (id) contentObject;
 {
-    CFTreeContext theContext;
-    CFTreeGetContext( treeBacking, &theContext );
-    return JX_BRIDGED_CAST(id, theContext.info);
+    id content = getContentObject(treeBacking);
+    return content;
 }
 
 //---------------------------------------------------------- 
@@ -593,9 +597,8 @@ CFTreeRef getPreviousNodeDepthFirstFor(CFTreeRef currentNode) {
     while (currentNode != endNode && objCount < len)
     {
         // Fill current stackbuf location...
-        CFTreeContext theContext;
-        CFTreeGetContext( currentNode, &theContext );
-        *stackbuf++ = theContext.info;
+        id content = getContentObject(currentNode);
+        *stackbuf++ = content;
         
         // ...move to the next node...
         currentNode = getNextNodeDepthFirstFor(currentNode);
@@ -659,16 +662,15 @@ CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumeratio
     JKPTree *nodeObject = nil;
     while (currentNode != endNode)
     {
-        CFTreeContext theContext;
-        CFTreeGetContext( currentNode, &theContext );
-        
         if (wantNodeObjects) {
             nodeObject = JX_AUTORELEASE([[JKPTree alloc] initWithCFTree:currentNode]);
         }
         
+        id content = getContentObject(currentNode);
+        
         block((JKPTOpaqueNodeRef)currentNode,
               nodeObject, 
-              JX_BRIDGED_CAST(id, theContext.info), 
+              content, 
               &stop);
         
         if (stop)  break;
@@ -685,10 +687,9 @@ CF_INLINE CFTreeRef getNextNodeWithOptions(CFTreeRef currentNode, JKPTEnumeratio
     
     while (currentNode != endNode)
     {
-        CFTreeContext theContext;
-        CFTreeGetContext( currentNode, &theContext );
+        id content = getContentObject(currentNode);
         
-        block(JX_BRIDGED_CAST(id, theContext.info), &stop);
+        block(content, &stop);
         
         if (stop)  break;
         

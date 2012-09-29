@@ -94,9 +94,7 @@ dumpTree(CFTreeRef currentNode, id locale, NSMutableArray *stack, NSMutableStrin
 		NSUInteger prefixLength = printPrefix(stack, out);
 		NSUInteger nextIndentationLevel = ((prefixLength + 2) / 4) + 1;
 		
-		CFTreeContext theContext;
-		CFTreeGetContext(currentNode, &theContext);
-		id contentObject = (id)theContext.info;
+        id contentObject = getContentObject(currentNode);
 		NSString *contentObjectDescription = [NSString stringWithFormat:@"[%@]",
 											  [contentObject jx_descriptionWithLocale:locale
 																			   indent:nextIndentationLevel
