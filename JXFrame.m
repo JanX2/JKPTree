@@ -3,7 +3,9 @@
 //  AttributedStringDumper
 //
 //  Created by Jan on 28.09.12.
+//  Copyright 2012 Jan Weiß
 //
+//  Released under the BSD software licence.
 //
 
 #import "JXFrame.h"

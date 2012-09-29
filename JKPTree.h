@@ -4,12 +4,16 @@
 //
 //  Created by Jamie Kirkpatrick on 02/04/2006.
 //  Copyright 2006 JKP. All rights reserved.  
+//  Copyright 2012 Jan Weiß
 //
 //  Released under the BSD software licence.
 //
 //  Version History
 //
-//  2-Apr-06: Initial Release
+//  2006-04-02: Initial Release.
+//  2011-05-29: Cleanup. 64-bit compatibility.
+//  2012-05-10: NSFastEnumeration support. Block enumeration.
+//  2012-09-28: Visual tree printing. See -description methods.
 //
 
 #import <Foundation/Foundation.h>

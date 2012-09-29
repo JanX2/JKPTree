@@ -3,7 +3,8 @@
 //  A simple CFTree Cocoa wrapper.
 //
 //  Created by Jamie Kirkpatrick on 02/04/2006.
-//  Copyright 2006 JKP. All rights reserved.  
+//  Copyright 2006 JKP. All rights reserved.
+//  Copyright 2012 Jan Weiß
 //
 //  Released under the BSD software licence.
 //
