@@ -28,7 +28,7 @@ CFTreeContext JKPTreeCreateContext( id content )
 {
     CFTreeContext context;
     memset( &context, 0, sizeof( CFTreeContext ) );
-    context.info            = (void *) content;
+    context.info            = JX_BRIDGED_CAST(void *, content);
     context.retain          = CFRetain;
     context.release         = CFRelease;
     context.copyDescription = CFCopyDescription;
@@ -106,7 +106,9 @@ NS_INLINE id getContentObject( CFTreeRef target )
 - (void) dealloc;
 {
     CFRelease( treeBacking );
+#if (JX_HAS_ARC == 0)
     [super dealloc];
+#endif
 }
 
 
@@ -559,7 +561,7 @@ CFTreeRef getPreviousNodeDepthFirstFor(CFTreeRef currentNode) {
 #define END_NODE_ENTRY      1
 
 - (NSUInteger) countByEnumeratingWithState: (NSFastEnumerationState *) state 
-                                   objects: (id *) stackbuf 
+                                   objects: (id __unsafe_unretained *) stackbuf 
                                      count: (NSUInteger) len;
 {
     // Plan of action: extra[NODE_ENTRY] will contain pointer to node

@@ -20,11 +20,20 @@
 
 /*
 Porting help (pretty crude, could use improvement):
-\[(.+) retain\]				JX_RETAIN(\1)
-\[(.+) release\]			JX_RELEASE(\1)
-\[(.+) autorelease\]		JX_AUTORELEASE(\1)
+\[(.+) retain\]					JX_RETAIN(\1)
+\[(.+) release\]				JX_RELEASE(\1)
+\[(.+) autorelease\]			JX_AUTORELEASE(\1)
 
-\(id\)([\w\d.]+|\[.+\])		JX_BRIDGED_CAST(id, \1)
+\(id\)([\w\d.]+|\[.+\])			JX_BRIDGED_CAST(id, \1)
+\(__bridge (.+?)\)([\w\d.]+)	JX_BRIDGED_CAST(\1, \2)
+\(__bridge (.+?)\)(.+?);		JX_BRIDGED_CAST(\1, \2);
+
+These are more lenient in what they match, but much more dangerous:
+ \[([\s\S]+) retain\]			JX_RETAIN(\1)
+ \[([\s\S]+) release\]			JX_RELEASE(\1)
+ \[([\s\S]+) autorelease\]		JX_AUTORELEASE(\1)
+
+Beware of the usual issues in simple RegEx with matching nesting!
  
 The above have usual problems with nesting. Don’t use them with “Replace all”!
 */
@@ -37,6 +46,8 @@ The above have usual problems with nesting. Don’t use them with “Replace all
 #define JX_AUTORELEASE(_o) (_o)
 
 #define JX_BRIDGED_CAST(_type, _o) (__bridge _type)(_o)
+#define JX_TRANSFER_OBJC_TO_CF(_type, _o) (__bridge_retained _type)(_o)
+#define JX_TRANSFER_CF_TO_OBJC(_type, _o) (__bridge_transfer _type)(_o)
 
 #else
 
@@ -46,6 +57,8 @@ The above have usual problems with nesting. Don’t use them with “Replace all
 #define JX_AUTORELEASE(_o) [(_o) autorelease]
 
 #define JX_BRIDGED_CAST(_type, _o) (_type)(_o)
+#define JX_TRANSFER_OBJC_TO_CF(_type, _o) (_type)((_o) ? CFRetain((CFTypeRef)(_o)) : NULL)
+#define JX_TRANSFER_CF_TO_OBJC(_type, _o) [(_type)CFMakeCollectable(_o) autorelease]
 
 #endif
 
