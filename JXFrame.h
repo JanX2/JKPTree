@@ -18,7 +18,7 @@
 @property (nonatomic, readwrite) int indent;
 @property (nonatomic, readwrite) unichar unichar;
 
-+ (id)frameWithIndent:(int)theIndent unichar:(unichar)theUnichar;
-- (id)initWithIndent:(int)theIndent unichar:(unichar)theUnichar;
++ (instancetype)frameWithIndent:(int)theIndent unichar:(unichar)theUnichar;
+- (instancetype)initWithIndent:(int)theIndent unichar:(unichar)theUnichar;
 
 @end

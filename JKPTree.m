@@ -50,7 +50,7 @@ NS_INLINE id getContentObject( CFTreeRef target )
 #pragma mark -
 
 @interface JKPTree (Private)
-- (id) initWithCFTree:(CFTreeRef)backing;
+- (instancetype) initWithCFTree:(CFTreeRef)backing;
 @end
 
 #pragma mark -
@@ -60,7 +60,7 @@ NS_INLINE id getContentObject( CFTreeRef target )
 //---------------------------------------------------------- 
 //  treeWithContentObject:
 //---------------------------------------------------------- 
-+ (id) treeWithContentObject:(id)theContentObject;
++ (instancetype) treeWithContentObject:(id)theContentObject;
 {
     return JX_AUTORELEASE([[self alloc] initWithContentObject:theContentObject]);
 }
@@ -68,7 +68,7 @@ NS_INLINE id getContentObject( CFTreeRef target )
 //---------------------------------------------------------- 
 //  initWithContentObject:
 //---------------------------------------------------------- 
-- (id) initWithContentObject:(id)theContentObject;
+- (instancetype) initWithContentObject:(id)theContentObject;
 {
     self = [super init];
     if ( !self )

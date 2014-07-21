@@ -17,14 +17,14 @@
 @synthesize indent = _indent;
 @synthesize unichar = _c;
 
-+ (id)frameWithIndent:(int)theIndent unichar:(unichar)theUnichar;
++ (instancetype)frameWithIndent:(int)theIndent unichar:(unichar)theUnichar;
 {
     id result = [[[self class] alloc] initWithIndent:theIndent unichar:theUnichar];
 	
     return JX_AUTORELEASE(result);
 }
 
-- (id)initWithIndent:(int)theIndent unichar:(unichar)theUnichar
+- (instancetype)initWithIndent:(int)theIndent unichar:(unichar)theUnichar
 {
     self = [super init];
 	

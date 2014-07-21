@@ -37,8 +37,8 @@ typedef NSUInteger JKPTEnumerationOptions;
     CFTreeRef       treeBacking;
 }
 
-+ (id) treeWithContentObject:(id)theContentObject;
-- (id) initWithContentObject:(id)theContentObject;
++ (instancetype) treeWithContentObject:(id)theContentObject;
+- (instancetype) initWithContentObject:(id)theContentObject;
 
 + (JKPTree *) treeWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
 - (JKPTree *) initWithOpaqueNode:(JKPTOpaqueNodeRef)treeNode;
