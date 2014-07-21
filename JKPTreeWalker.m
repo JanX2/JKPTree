@@ -2,7 +2,7 @@
 //  treeWalker.m
 //
 //  Copyright (C) 2007 David L Parsons
-//  Copyright (c) 2012 Jan Weiß
+//  Copyright (c) 2012-2014 Jan Weiß
 //	Based on “dumptree.c”; part of “Discount” by David L Parsons. 
 //  Ported to Obj-C by Jan Weiß. 
 //

@@ -1,9 +1,8 @@
 //
 //  JXFrame.m
-//  AttributedStringDumper
 //
 //  Created by Jan on 28.09.12.
-//  Copyright 2012 Jan Weiß
+//  Copyright 2012-2014 Jan Weiß
 //
 //  Released under the BSD software licence.
 //
